@@ -13,7 +13,7 @@ RUN tar zxvf consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
     rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
     rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64
 
-RUN mkdir -p /haproxy /consul-template/config.d /consul-template/template.d
+RUN mkdir -p /consul-template/config.d /consul-template/template.d /tmp/nginx
 
 ADD config/ /consul-template/config.d/
 ADD template/ /consul-template/template.d/
