@@ -15,7 +15,7 @@ RUN tar zxvf consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
 
 RUN mkdir -p /consul-template /tmp/nginx
 
-ADD template/nginx.tmpl /consul-template/nginx.tmpl 
+ADD template/ /consul-template/
 ADD launch.sh /launch.sh
 
 CMD ["/launch.sh"]
