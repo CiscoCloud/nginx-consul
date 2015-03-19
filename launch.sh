@@ -42,18 +42,10 @@ USAGE
 function launch_consul_template {
   vars=$@
   echo "Starting consul template..."
-  /bin/echo "{{key \"${NGINX_KV}\" }}" > /consul-template/nginx.tmpl
   ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                      -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
-                     -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf" \
+                     -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
                      -consul ${CONSUL_CONNECT} ${vars}
-#  ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
-#	-template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf" \
-#	-once \
-#	-consul ${CONSUL_CONNECT} ${vars}
-#  cat /etc/nginx/nginx.conf
-#  ${NGINX} -t -c /etc/nginx/nginx.conf
-#  ${NGINX} -c /etc/nginx/nginx.conf
 }
 
 launch_consul_template $@
