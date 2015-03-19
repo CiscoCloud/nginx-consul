@@ -45,6 +45,7 @@ function launch_consul_template {
   ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                      -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                      -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
+                     -template "/consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf" \
                      -consul ${CONSUL_CONNECT} ${vars}
 }
 
