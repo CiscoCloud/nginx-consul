@@ -25,6 +25,12 @@ Nginx vars:
   NGINX                 Location of nginx bin
                         (default /usr/sibn/nginx)
 
+  NGINX_KV              Consul K/V path to template contents
+                        (default nginx/template/default)
+
+  NGINX_DEBUG           If set, run consul-template once and check generated nginx.conf
+                        (default not set)
+
 Consul-template variables:
   CONSUL_TEMPLATE       Location of consul-template bin 
                         (default /usr/local/bin/consul-template)
@@ -41,16 +47,24 @@ USAGE
 
 function launch_consul_template {
   vars=$@
-  echo "Starting consul template..."
   if [ -n "${NGINX_ENABLE_AUTH}" ]; then
     nginx_auth='-template /consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf'
   fi
 
-
-  ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
-                     -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
-                     -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
-                     -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars}
+  if [ -n "${NGINX_DEBUG}" ]; then
+    echo "Running consul template -once..."
+    ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
+                       -wait ${CONSUL_MINWAI}:${CONSUL_MAXWAIT} \
+                       -template /consul-template/nginx.tmpl:/etc/nginx/nginx.conf \
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} -once ${vars}
+    ${NGINX} -t -c /etc/nginx/nginx.conf
+  else
+    echo "Starting consul template..."
+    ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
+                       -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
+                       -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars}
+  fi
 }
 
 launch_consul_template $@
