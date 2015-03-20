@@ -54,7 +54,7 @@ function launch_consul_template {
   if [ -n "${NGINX_DEBUG}" ]; then
     echo "Running consul template -once..."
     ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
-                       -wait ${CONSUL_MINWAI}:${CONSUL_MAXWAIT} \
+                       -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                        -template /consul-template/nginx.tmpl:/etc/nginx/nginx.conf \
                        -consul ${CONSUL_CONNECT} ${nginx_auth} -once ${vars}
     ${NGINX} -t -c /etc/nginx/nginx.conf
