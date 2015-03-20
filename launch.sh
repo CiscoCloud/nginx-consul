@@ -43,7 +43,7 @@ function launch_consul_template {
   vars=$@
   echo "Starting consul template..."
   if [ -n "${NGINX_ENABLE_AUTH}" ]; then
-    nginx_auth='-template "/consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf"'
+    nginx_auth='-template /consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf'
   fi
 
   ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
