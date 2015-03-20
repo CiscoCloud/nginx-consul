@@ -17,5 +17,6 @@ RUN mkdir -p /consul-template /tmp/nginx
 
 ADD template/ /consul-template/
 ADD launch.sh /launch.sh
+ADD nginx/nginx-auth.conf /etc/nginx/nginx-auth.conf
 
 CMD ["/launch.sh"]
