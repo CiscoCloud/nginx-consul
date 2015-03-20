@@ -42,11 +42,14 @@ USAGE
 function launch_consul_template {
   vars=$@
   echo "Starting consul template..."
+  if [ -n "${NGINX_ENABLE_AUTH}" ]; then
+    nginx_auth='-template "/consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf"'
+  fi
+
   ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                      -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                      -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
-                     -template "/consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf" \
-                     -consul ${CONSUL_CONNECT} ${vars}
+                     -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars}
 }
 
 launch_consul_template $@
