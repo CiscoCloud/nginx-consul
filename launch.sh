@@ -61,12 +61,10 @@ function launch_consul_template {
     /nginx-run.sh
   else
     echo "Starting consul template..."
-    ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
+    exec ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                        -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                        -config /consul-template/consul.cfg \
-                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars} &
-    /bin/echo $! > /var/run/consul-template.pid
-    wait
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars} 
   fi
 }
 
