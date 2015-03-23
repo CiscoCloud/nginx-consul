@@ -55,15 +55,18 @@ function launch_consul_template {
     echo "Running consul template -once..."
     ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                        -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
+                       -config /consul-template/consul.cfg \
                        -template /consul-template/nginx.tmpl:/etc/nginx/nginx.conf \
                        -consul ${CONSUL_CONNECT} ${nginx_auth} -once ${vars}
-    ${NGINX} -t -c /etc/nginx/nginx.conf
+    /nginx-run.sh
   else
     echo "Starting consul template..."
     ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                        -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
-                       -template "/consul-template/nginx.tmpl:/etc/nginx/nginx.conf:${NGINX} -s reload || ( ${NGINX} -t -c /etc/nginx/nginx.conf && ${NGINX} -c /etc/nginx/nginx.conf )" \
-                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars}
+                       -config /consul-template/consul.cfg \
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars} &
+    /bin/echo $! > /var/run/consul-template.pid
+    wait
   fi
 }
 
