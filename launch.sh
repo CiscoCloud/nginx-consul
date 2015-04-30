@@ -6,11 +6,11 @@ set -e
 
 # Required vars
 NGINX=${NGINX:-/usr/sbin/nginx}
-NGINX_CONF=${NGINX_CONF:-/etc/nginx}
+NGINX_KV=${NGINX_KV:-nginx/template/default}
 
 CONSUL_TEMPLATE=${CONSUL_TEMPLATE:-/usr/local/bin/consul-template}
 CONSUL_CONFIG=${CONSUL_CONFIG:-/consul-template/config.d}
-CONSUL_CONNECT=${CONSUL_CONNECT:-consul.service.consul:8500}
+CONSUL_CONNECT=${CONSUL_CONNECT:-127.0.0.1:8500}
 CONSUL_MINWAIT=${CONSUL_MINWAIT:-2s}
 CONSUL_MAXWAIT=${CONSUL_MAXWAIT:-10s}
 CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-debug}
@@ -25,8 +25,11 @@ Nginx vars:
   NGINX                 Location of nginx bin
                         (default /usr/sibn/nginx)
 
-  NGINX_CONF            Location of nginx conf dir
-                        (default /etc/nginx)
+  NGINX_KV              Consul K/V path to template contents
+                        (default nginx/template/default)
+
+  NGINX_DEBUG           If set, run consul-template once and check generated nginx.conf
+                        (default not set)
 
 Consul-template variables:
   CONSUL_TEMPLATE       Location of consul-template bin 
@@ -36,30 +39,33 @@ Consul-template variables:
   CONSUL_CONNECT        The consul connection
                         (default consul.service.consul:8500)
 
-  CONSUL_CONFIG         File/directory for consul-template config
-                        (default /consul-template/config.d)
-USAGE
-
   CONSUL_LOGLEVEL       Valid values are "debug", "info", "warn", and "err".
                         (default is "debug")
-
 USAGE
-}
-
-function start_nginx {
-  echo "Starting nginx..."
-  ${NGINX} -c ${NGINX_CONF}/nginx.conf
 }
 
 
 function launch_consul_template {
   vars=$@
-  echo "Starting consul template..."
-  ${CONSUL_TEMPLATE} -config ${CONSUL_CONFIG} \
-                     -log-level ${CONSUL_LOGLEVEL} \
-                     -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
-                     -consul ${CONSUL_CONNECT} ${vars}
+  if [ -n "${NGINX_ENABLE_AUTH}" ]; then
+    nginx_auth='-template /consul-template/nginx-auth.tmpl:/etc/nginx/nginx-auth.conf'
+  fi
+
+  if [ -n "${NGINX_DEBUG}" ]; then
+    echo "Running consul template -once..."
+    ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
+                       -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
+                       -config /consul-template/consul.cfg \
+                       -template /consul-template/nginx.tmpl:/etc/nginx/nginx.conf \
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} -once ${vars}
+    /nginx-run.sh
+  else
+    echo "Starting consul template..."
+    exec ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
+                       -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
+                       -config /consul-template/consul.cfg \
+                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars} 
+  fi
 }
 
-start_nginx
 launch_consul_template $@

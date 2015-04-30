@@ -2,7 +2,7 @@ FROM gliderlabs/alpine
 
 MAINTAINER Steven Borrelli <steve@aster.is>
 
-ENV CONSUL_TEMPLATE_VERSION=0.7.0
+ENV CONSUL_TEMPLATE_VERSION=0.8.0
 
 RUN apk-install bash nginx
 
@@ -13,10 +13,12 @@ RUN tar zxvf consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
     rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
     rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64
 
-RUN mkdir -p /consul-template/config.d /consul-template/template.d /tmp/nginx
+RUN mkdir -p /consul-template /tmp/nginx
 
-ADD config/ /consul-template/config.d/
-ADD template/ /consul-template/template.d/
+ADD template/ /consul-template/
 ADD launch.sh /launch.sh
+ADD nginx-run.sh /nginx-run.sh
+ADD reload.sh /reload.sh
+ADD nginx/nginx-auth.conf /etc/nginx/nginx-auth.conf
 
 CMD ["/launch.sh"]
