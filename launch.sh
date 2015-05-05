@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e 
+set -e
 #set the DEBUG env variable to turn on debugging
 [[ -n "$DEBUG" ]] && set -x
 
@@ -14,6 +14,17 @@ CONSUL_CONNECT=${CONSUL_CONNECT:-127.0.0.1:8500}
 CONSUL_MINWAIT=${CONSUL_MINWAIT:-2s}
 CONSUL_MAXWAIT=${CONSUL_MAXWAIT:-10s}
 CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-debug}
+
+# set up SSL
+if [ "$(ls -A /usr/local/share/ca-certificates)" ]; then
+  CONSUL_SSL="-ssl"
+  # normally we'd use update-ca-certificates, but something about running it in
+  # Alpine is off, and the certs don't get added. Fortunately, we only need to
+  # add ca-certificates to the global store and it's all plain text.
+  cat /usr/local/share/ca-certificates/* >> /etc/ssl/certs/ca-certificates.crt
+else
+  CONSUL_SSL=""
+fi
 
 function usage {
 cat <<USAGE
@@ -32,7 +43,7 @@ Nginx vars:
                         (default not set)
 
 Consul-template variables:
-  CONSUL_TEMPLATE       Location of consul-template bin 
+  CONSUL_TEMPLATE       Location of consul-template bin
                         (default /usr/local/bin/consul-template)
 
 
@@ -57,14 +68,14 @@ function launch_consul_template {
                        -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                        -config /consul-template/consul.cfg \
                        -template /consul-template/nginx.tmpl:/etc/nginx/nginx.conf \
-                       -consul ${CONSUL_CONNECT} ${nginx_auth} -once ${vars}
+                       -consul ${CONSUL_CONNECT} ${CONSUL_SSL} ${nginx_auth} -once ${vars}
     /nginx-run.sh
   else
     echo "Starting consul template..."
     exec ${CONSUL_TEMPLATE} -log-level ${CONSUL_LOGLEVEL} \
                        -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
                        -config /consul-template/consul.cfg \
-                       -consul ${CONSUL_CONNECT} ${nginx_auth} ${vars} 
+                       -consul ${CONSUL_CONNECT} ${CONSUL_SSL} ${nginx_auth} ${vars}
   fi
 }
 

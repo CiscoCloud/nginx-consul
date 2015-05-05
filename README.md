@@ -17,3 +17,10 @@ docker run -v /my/ssl/loc:/etc/nginx/ssl ...
 docker run -v /my/ssl/loc:/etc/nginx/ssl -d --net=host  -e CONSUL_CONNECT=localhost:8500 --name nginx-proxy nginx
 
 ```
+
+## SSL
+
+If you have an SSL root certificate that you need to trust to connect to Consul,
+mount a volume containing the PEM at `/usr/local/share/ca-certificates`
+(preferable read-only). The container will pick up the certificates and enable
+the relevant Consul flags at runtime.
