@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 if [ ! -s /etc/nginx/nginx.conf ]; then
   exit 0
 fi

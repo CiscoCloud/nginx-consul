@@ -1,23 +1,14 @@
-FROM gliderlabs/alpine
+FROM asteris/consul-template:latest
 
-MAINTAINER Steven Borrelli <steve@aster.is>
-
-ENV CONSUL_TEMPLATE_VERSION=0.8.0
+MAINTAINER Chris Aubuchon <Chris.Aubuchon@gmail.com>
 
 RUN apk-install bash nginx ca-certificates
 
-ADD https://github.com/hashicorp/consul-template/releases/download/v${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz /
+RUN mkdir -p /tmp/nginx /defaults
 
-RUN tar zxvf consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
-    mv consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64/consul-template /usr/local/bin/consul-template && \
-    rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.tar.gz && \
-    rm -rf /consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64
+ADD templates/ /consul-template/templates
+ADD config.d/ /consul-template/config.d
+ADD defaults/ /defaults
+ADD scripts /scripts/
 
-RUN mkdir -p /consul-template /tmp/nginx
-
-ADD template/ /consul-template/
-ADD launch.sh /launch.sh
-ADD nginx-run.sh /nginx-run.sh
-ADD nginx/nginx-auth.conf /etc/nginx/nginx-auth.conf
-
-CMD ["/launch.sh"]
+CMD ["/scripts/launch.sh"]
