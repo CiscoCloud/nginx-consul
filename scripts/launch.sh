@@ -9,6 +9,8 @@ NGINX_KV=${NGINX_KV:-nginx/template/default}
 CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-debug}
 CONSUL_SSL_VERIFY=${CONSUL_SSL_VERIFY:-true}
 
+export NGINX_KV
+
 # set up SSL
 if [ "$(ls -A /usr/local/share/ca-certificates)" ]; then
   # normally we'd use update-ca-certificates, but something about running it in
