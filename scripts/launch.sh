@@ -51,6 +51,9 @@ Consul vars:
 
   CONSUL_SSL_VERIFY	Verify Consul SSL connection
 			(default true)
+
+  CONSUL_TOKEN		Consul API token
+			(default not set)
 USAGE
 }
 
@@ -77,6 +80,7 @@ function launch_consul_template {
   [[ -n "${CONSUL_CONNECT}" ]] && ctargs="${ctargs} -consul ${CONSUL_CONNECT}"
   [[ -n "${CONSUL_SSL}" ]] && ctargs="${ctargs} -ssl"
   [[ -n "${CONSUL_SSL}" ]] && ctargs="${ctargs} -ssl-verify=${CONSUL_SSL_VERIFY}"
+  [[ -n "${CONSUL_TOKEN}" ]] && ctargs="${ctargs} -token ${CONSUL_TOKEN}"
 
   # Create an empty nginx.tmpl so consul-template will start
   touch /consul-template/templates/nginx.tmpl
