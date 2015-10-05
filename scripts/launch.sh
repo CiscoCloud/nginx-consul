@@ -6,7 +6,7 @@ set -e
 
 # Required vars
 NGINX_KV=${NGINX_KV:-nginx/template/default}
-CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-debug}
+CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-info}
 CONSUL_SSL_VERIFY=${CONSUL_SSL_VERIFY:-true}
 
 export NGINX_KV
@@ -41,7 +41,7 @@ Nginx vars:
 
 Consul vars:
   CONSUL_LOG_LEVEL	Set the consul-template log level
-			(default debug)
+			(default info)
 
   CONSUL_CONNECT	URI for Consul agent
 			(default not set)
