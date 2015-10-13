@@ -6,9 +6,8 @@ RUN apk-install bash nginx ca-certificates
 
 RUN mkdir -p /tmp/nginx /defaults
 
-ADD templates/ /consul-template/templates
+ADD template.d/ /consul-template/template.d
 ADD config.d/ /consul-template/config.d
-ADD defaults/ /defaults
 ADD scripts /scripts/
 
 CMD ["/scripts/launch.sh"]
