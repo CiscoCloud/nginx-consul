@@ -1,0 +1,37 @@
+events {
+	worker_connections 1024;
+}
+
+http {
+	server_names_hash_bucket_size  128;
+
+	# Mesos instances for each service
+{{ range $serv := services }}
+	{{ range $tag := $serv.Tags }}
+	upstream {{ $tag }}_{{ $serv.Name }}_backend {
+		{{ range service (printf "%s.%s" $tag $serv.Name) }}
+		server {{ .Address }}:{{ .Port }};{{ end }}
+	}
+	{{ end }}
+{{ end }}
+
+	# All unknown requests get no response
+	server {
+		listen 80;
+		server_name "";
+		return 444;
+	}
+ 
+ 	# proxy settings for each service
+{{ range $serv := services }}
+	{{ range $tag := $serv.Tags }}
+	server {
+		listen 80;
+		server_name {{ $tag }}.{{ $serv.Name }}.{{ env "NGINX_DOMAIN" }};
+		location / {
+			proxy_pass http://{{ $tag }}_{{ $serv.Name }}_backend;
+		}
+	}
+	{{ end }}
+{{ end }}
+}

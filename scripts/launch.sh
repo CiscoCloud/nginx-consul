@@ -5,11 +5,12 @@ set -e
 [[ -n "$DEBUG" ]] && set -x
 
 # Required vars
-NGINX_KV=${NGINX_KV:-nginx/template/default}
+CONSUL_TEMPLATE=${CONSUL_TEMPLATE:-/usr/local/bin/consul-template}
+CONSUL_CONFIG=${CONSUL_CONFIG:-/consul-template/config.d}
+CONSUL_CONNECT=${CONSUL_CONNECT:-consul.service.consul:8500}
+CONSUL_MINWAIT=${CONSUL_MINWAIT:-2s}
+CONSUL_MAXWAIT=${CONSUL_MAXWAIT:-10s}
 CONSUL_LOGLEVEL=${CONSUL_LOGLEVEL:-info}
-CONSUL_SSL_VERIFY=${CONSUL_SSL_VERIFY:-true}
-
-export NGINX_KV
 
 # set up SSL
 if [ "$(ls -A /usr/local/share/ca-certificates)" ]; then
@@ -26,8 +27,8 @@ cat <<USAGE
 Configure using the following environment variables:
 
 Nginx vars:
-  NGINX_KV              Consul K/V path to template contents
-                        (default nginx/template/default)
+  NGINX_DOMAIN          The domain to match aainst
+                        (default: example.com or app.example.com)
 
   NGINX_DEBUG           If set, run consul-template once and check generated nginx.conf
                         (default not set)
@@ -57,50 +58,20 @@ Consul vars:
 USAGE
 }
 
-function config_auth {
-  case ${NGINX_AUTH_TYPE} in
-  basic)
-	ln -s /defaults/config.d/nginx-auth.cfg /consul-template/config.d/nginx-auth.cfg
-	ln -s /defaults/templates/nginx-basic.tmpl /consul-template/templates/nginx-auth.tmpl
-	;;
-  esac
-
-  # nginx fails if the file does not exist so create an empty one for now
-  touch /etc/nginx/nginx-auth.conf
-}
-
 function launch_consul_template {
-  vars=$@
-  ctargs=
+    if [ "$(ls -A /usr/local/share/ca-certificates)" ]; then
+        cat /usr/local/share/ca-certificates/* >> /etc/ssl/certs/ca-certificates.crt
+    fi
 
-  if [ -n "${NGINX_AUTH_TYPE}" ]; then
-    config_auth
-  fi
+    if [ -n "${CONSUL_TOKEN}" ]; then
+        ctargs="${ctargs} -token ${CONSUL_TOKEN}"
+    fi
 
-  [[ -n "${CONSUL_CONNECT}" ]] && ctargs="${ctargs} -consul ${CONSUL_CONNECT}"
-  [[ -n "${CONSUL_SSL}" ]] && ctargs="${ctargs} -ssl"
-  [[ -n "${CONSUL_SSL}" ]] && ctargs="${ctargs} -ssl-verify=${CONSUL_SSL_VERIFY}"
-  [[ -n "${CONSUL_TOKEN}" ]] && ctargs="${ctargs} -token ${CONSUL_TOKEN}"
-
-  # Create an empty nginx.tmpl so consul-template will start
-  touch /consul-template/templates/nginx.tmpl
-
-  if [ -n "${NGINX_DEBUG}" ]; then
-    echo "Running consul template -once..."
-    consul-template -log-level ${CONSUL_LOGLEVEL} \
-		       -template /consul-template/templates/nginx.tmpl.in:/consul-template/templates/nginx.tmpl \
-		       ${ctargs} -once 
-
-    consul-template -log-level ${CONSUL_LOGLEVEL} \
-                       -config /consul-template/config.d \
-                       ${ctargs} -once ${vars}
-    /scripts/nginx-run.sh
-  else
-    echo "Starting consul template..."
-    exec consul-template -log-level ${CONSUL_LOGLEVEL} \
-                       -config /consul-template/config.d \
-                       ${ctargs} ${vars} 
-  fi
+    vars=$@
+    ${CONSUL_TEMPLATE} -config ${CONSUL_CONFIG} \
+                       -log-level ${CONSUL_LOGLEVEL} \
+                       -wait ${CONSUL_MINWAIT}:${CONSUL_MAXWAIT} \
+                       -consul ${CONSUL_CONNECT} ${ctargs} ${vars}
 }
 
 launch_consul_template $@

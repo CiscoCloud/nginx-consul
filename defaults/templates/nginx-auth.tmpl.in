@@ -1,2 +1,0 @@
-{{ range $index, $user := ls "NGINX_AUTH_KV" }}{{ with vault (printf "NGINX_AUTH_KV/%s" $user.Key) }}{{ $user.Key }} {PLAIN}{{ .Data.password }}
-{{ end }}{{ end }}
