@@ -1,4 +1,4 @@
-FROM asteris/consul-template:latest
+FROM ChrisAubuchon/consul-template:latest
 
 MAINTAINER Chris Aubuchon <Chris.Aubuchon@gmail.com>
 
