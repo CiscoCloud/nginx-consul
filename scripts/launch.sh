@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e 
-
 #set the DEBUG env variable to turn on debugging
 [[ -n "$DEBUG" ]] && set -x
 
