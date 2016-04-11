@@ -4,11 +4,10 @@ MAINTAINER Chris Aubuchon <Chris.Aubuchon@gmail.com>
 
 RUN apk-install bash nginx ca-certificates
 
-RUN mkdir -p /tmp/nginx /defaults
+RUN mkdir -p /etc/nginx /tmp/nginx /defaults
 
-ADD templates/ /consul-template/templates
-ADD config.d/ /consul-template/config.d
 ADD defaults/ /defaults
 ADD scripts /scripts/
+ADD nginx/ /etc/nginx
 
 CMD ["/scripts/launch.sh"]

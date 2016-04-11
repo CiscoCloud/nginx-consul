@@ -1,3 +1,0 @@
-{{ with $d := env "NGINX_KV" }}
-{{ key $d }}
-{{ end }}
