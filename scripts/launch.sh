@@ -5,21 +5,21 @@ set -e
 #set the DEBUG env variable to turn on debugging
 [[ -n "$DEBUG" ]] && set -x
 
-ctpid_file="/consul-template/ct.pid"
+ctpid=0
 
 hup_handler() {
 	generate_config
-	pkill -HUP -F ${ctpid_file}
+	kill -HUP ${ctpid}
 }
 
 term_handler() {
-	pkill ${ctpid_file}
-	wait `cat ${ctpid_file}`
+	kill ${ctpid}
+	wait ${ctpid}
 	exit
 }
 
 generate_config() {
-	for file in `/etc/nginx/templates/*`; do
+	for file in /etc/nginx/templates/*; do
 		fname="`basename ${file}`"
 		cat > /consul-template/config.d/${fname}.conf << EOF
 template {
@@ -67,8 +67,8 @@ fi
 
 consul-template -log-level ${CONSUL_LOGLEVEL} \
 	-config /consul-template/config.d \
-	-pid-file ${ctpid_file} \
 	${ctvars} &
+ctpid=$!
 
 while :; do
 	tail -f /dev/null &
