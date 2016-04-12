@@ -74,7 +74,7 @@ fi
 [[ -n "${CONSUL_TOKEN}" ]] && ctargs="${ctargs} -token ${CONSUL_TOKEN}"
 
 generate_config
-
+reload_consul_template
 
 while :; do
 	tail -f /dev/null &
