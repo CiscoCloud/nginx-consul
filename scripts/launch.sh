@@ -30,7 +30,10 @@ EOF
 }
 
 reload_consul_template() {
-	kill -HUP ${ctpid}
+	if [ ${ctpid} -ne 0 ]; then
+		kill -HUP ${ctpid}
+	fi
+
 	if [ $? -ne 0 ]; then
 		consul-template -log-level ${CONSUL_LOGLEVEL} \
 			-config /consul-template/config.d \
