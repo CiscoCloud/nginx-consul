@@ -63,6 +63,8 @@ fi
 [[ -n "${CONSUL_SSL}" ]] && ctargs="${ctargs} -ssl-verify=${CONSUL_SSL_VERIFY}"
 [[ -n "${CONSUL_TOKEN}" ]] && ctargs="${ctargs} -token ${CONSUL_TOKEN}"
 
+generate_config
+
 consul-template -log-level ${CONSUL_LOGLEVEL} \
 	-config /consul-template/config.d \
 	${ctvars} &
