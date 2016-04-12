@@ -7,7 +7,7 @@ ctpid=0
 
 hup_handler() {
 	generate_config
-	kill -HUP ${ctpid}
+	reload_consul_template
 }
 
 term_handler() {
@@ -23,10 +23,20 @@ generate_config() {
 template {
 	source = "${file}"
 	destination = "/etc/nginx/conf/${fname}.conf"
-	command = "/scripts/nginx-run.sh"
+	command = "/scripts/nginx-run.sh || true"
 }
 EOF
 	done
+}
+
+reload_consul_template() {
+	kill -HUP ${ctpid}
+	if [ $? -ne 0 ]; then
+		consul-template -log-level ${CONSUL_LOGLEVEL} \
+			-config /consul-template/config.d \
+		${ctvars} &
+		ctpid=$!
+	fi
 }
 
 trap hup_handler SIGHUP
@@ -65,10 +75,6 @@ fi
 
 generate_config
 
-consul-template -log-level ${CONSUL_LOGLEVEL} \
-	-config /consul-template/config.d \
-	${ctvars} &
-ctpid=$!
 
 while :; do
 	tail -f /dev/null &
