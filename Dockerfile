@@ -1,4 +1,4 @@
-FROM drifting/consul-template:latest
+FROM asteris/consul-template:latest
 
 MAINTAINER Chris Aubuchon <Chris.Aubuchon@gmail.com>
 
