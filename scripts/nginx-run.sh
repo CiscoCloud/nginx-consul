@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -x
+#set the DEBUG env variable to turn on debugging
+[[ -n "$DEBUG" ]] && set -x
 
 if [ ! -s /etc/nginx/nginx.conf ]; then
   exit 0
