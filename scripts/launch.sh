@@ -39,7 +39,7 @@ reload_consul_template() {
 
 	consul-template -log-level ${CONSUL_LOGLEVEL} \
 		-config /consul-template/config.d \
-	${ctvars} &
+	${ctargs} &
 	ctpid=$!
 }
 
